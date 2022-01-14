@@ -150,7 +150,6 @@ class SecurityServiceTest {
 
 /* 10. If the system is armed, reset all sensors to inactive.
     * */
-
   @Test
     void checkIf_armedSystem_setAllSensorsToInactive(){
     service.setArmingStatus(ArmingStatus.ARMED_AWAY);
@@ -166,6 +165,8 @@ class SecurityServiceTest {
     service.processImage(Mockito.mock(BufferedImage.class));
     Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.ALARM);
 }
+
+
 
 }
 

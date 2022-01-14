@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.awt.image.BufferedImage;
 
@@ -150,9 +152,11 @@ class SecurityServiceTest {
 
 /* 10. If the system is armed, reset all sensors to inactive.
     * */
-  @Test
-    void checkIf_armedSystem_setAllSensorsToInactive(){
-    service.setArmingStatus(ArmingStatus.ARMED_AWAY);
+  @ParameterizedTest
+  @EnumSource(ArmingStatus.class)
+    void checkIf_armedSystem_setAllSensorsToInactive(ArmingStatus armingStatus){
+    service.setArmingStatus(armingStatus);
+    sensor.setActive(true);
     service.getSensors().forEach(s1-> Assertions.assertEquals(false,s1.getActive()));
     }
 
@@ -165,7 +169,6 @@ class SecurityServiceTest {
     service.processImage(Mockito.mock(BufferedImage.class));
     Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.ALARM);
 }
-
 
 
 }

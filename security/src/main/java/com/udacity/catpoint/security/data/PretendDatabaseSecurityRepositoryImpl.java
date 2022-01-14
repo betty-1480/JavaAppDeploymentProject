@@ -34,9 +34,6 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
 
         //we've serialized our sensor objects for storage, which should be a good warning sign that
         // this is likely an impractical solution for a real system
-        try{
-            prefs.clear();
-        }catch (java.util.prefs.BackingStoreException e){}
 
         String sensorString = prefs.get(SENSORS, null);
 

@@ -51,9 +51,8 @@ public class SecurityService {
                 break;
             }
         }
-
         securityRepository.setArmingStatus(armingStatus);
-        statusListeners.forEach(statusListener -> statusListener.sensorStatusChanged());
+        statusListeners.forEach(StatusListener::sensorStatusChanged);
     }
 
     /**
@@ -102,11 +101,9 @@ public class SecurityService {
         switch(securityRepository.getAlarmStatus()) {
             case NO_ALARM -> {
                 setAlarmStatus(AlarmStatus.PENDING_ALARM);
-                break;
             }
             case PENDING_ALARM -> {
                 setAlarmStatus(AlarmStatus.ALARM);
-                break;
             }
         }
     }
@@ -118,11 +115,9 @@ public class SecurityService {
         switch (securityRepository.getAlarmStatus()){
             case PENDING_ALARM -> {
                 setAlarmStatus(AlarmStatus.NO_ALARM);
-                break;
             }
             case ALARM ->{
                 setAlarmStatus(AlarmStatus.PENDING_ALARM);
-                break;
             }
         }
     }

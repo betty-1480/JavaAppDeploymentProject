@@ -36,7 +36,9 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
         // this is likely an impractical solution for a real system
 
         String sensorString = prefs.get(SENSORS, null);
-
+        try{
+            prefs.clear();
+        }catch (java.util.prefs.BackingStoreException e){}
         if(sensorString == null) {
             sensors = new TreeSet<>();
         } else {

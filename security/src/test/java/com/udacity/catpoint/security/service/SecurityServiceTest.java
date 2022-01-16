@@ -1,17 +1,18 @@
 package com.udacity.catpoint.security.service;
 
 import com.udacity.catpoint.image.service.ImageService;
+import com.udacity.catpoint.security.application.StatusListener;
 import com.udacity.catpoint.security.data.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import java.awt.image.BufferedImage;
 
@@ -26,6 +27,9 @@ class SecurityServiceTest {
 
     @Mock
     SecurityRepository fakeSecurityRepository; //Dependency
+
+    @Mock
+    private StatusListener statusListener;
 
     private Sensor sensor; // SecurityService methods parameter, no direct dependency
 
@@ -147,7 +151,7 @@ class SecurityServiceTest {
     @Test
     void checkIf_disarmedSystem_setAlarmStatusToNOALARM(){
         service.setArmingStatus(ArmingStatus.DISARMED);
-        Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
+        Mockito.verify(fakeSecurityRepository,Mockito.times(1)).setAlarmStatus(AlarmStatus.NO_ALARM);
     }
 
 /* 10. If the system is armed, reset all sensors to inactive.
@@ -170,6 +174,72 @@ class SecurityServiceTest {
     Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.ALARM);
 }
 
+    @Test
+    public void checking_to_see_if_change_in_sensor_activation_status_deactivate_sensor(){
+        fakeSecurityRepository.setAlarmStatus(AlarmStatus.PENDING_ALARM);
+        service.changeSensorActivationStatus(sensor, false);
+        assert sensor.getActive().equals(false);
+        Mockito.verify(fakeSecurityRepository, Mockito.times(1)).setAlarmStatus(Mockito.any(AlarmStatus.class));
+    }
+
+    @Test
+    public void test_add_and_remove_status_listener(){
+        service.addStatusListener(statusListener);
+        service.removeStatusListener(statusListener);
+    }
+
+    @Test
+    public void test_add_and_remove_sensor(){
+        fakeSecurityRepository.addSensor(sensor);
+        fakeSecurityRepository.removeSensor(sensor);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ArmingStatus.class)
+    public void checking_to_see_if_arming_status_can_run_three_times(ArmingStatus armingStatus){
+        fakeSecurityRepository.setArmingStatus(armingStatus);
+    }
+
+    @Test
+    public void test_to_see_if_sensor_can_be_updated(){
+        fakeSecurityRepository.addSensor(sensor);
+        fakeSecurityRepository.updateSensor(sensor);
+    }
+
+    @Test
+    public void if_noCatDetectedAndSensorsNotActive_changeStatusToNOALARM(){
+       service.changeSensorActivationStatus(sensor, false);
+        Mockito.when(fakeImageService.imageContainsCat(Mockito.any(), Mockito.anyFloat())).thenReturn(false);
+        service.processImage(Mockito.mock(BufferedImage.class));
+        Mockito.verify(fakeSecurityRepository, Mockito.times(1)).setAlarmStatus(AlarmStatus.NO_ALARM);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ArmingStatus.class)
+    public void if_armedSystem_resetAllSensorsToInactive(ArmingStatus armingStatus){
+        fakeSecurityRepository.setArmingStatus(armingStatus);
+        sensor.setActive(false);
+        fakeSecurityRepository.getSensors().forEach(sensor -> {
+            assert Boolean.FALSE.equals(sensor.getActive());
+        });
+    }
+
+    @Test
+    public void check_to_see_if_handSensor_is_activated_when_repository_is_disarmed_and_alarm_should_trigger_handle_sensor_to_deactivate(){
+
+        fakeSecurityRepository.setArmingStatus(ArmingStatus.DISARMED);
+        Mockito.when(fakeSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
+        sensor.setActive(true);
+        service.changeSensorActivationStatus(sensor, false);
+    }
+
+    @Test
+    public void checkIf_armingStatusIsARMEDHOMEandcatDetected_setAlarmStatusToALARM(){
+        Mockito.when(fakeSecurityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+        Mockito.when(fakeImageService.imageContainsCat(Mockito.any(), Mockito.anyFloat())).thenReturn(true);
+        service.processImage(Mockito.eq(Mockito.any(BufferedImage.class)));
+        Mockito.verify(fakeSecurityRepository, Mockito.times(1)).setAlarmStatus(AlarmStatus.ALARM);
+    }
 
 }
 

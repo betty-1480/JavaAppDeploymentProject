@@ -19,10 +19,10 @@ public class CatpointGui extends JFrame {
     private SecurityRepository securityRepository = new PretendDatabaseSecurityRepositoryImpl();
     private ImageService imageService= new FakeImageService();
     private SecurityService securityService = new SecurityService(securityRepository, imageService);
-    private DisplayPanel displayPanel = new DisplayPanel(securityService);
-    private ControlPanel controlPanel = new ControlPanel(securityService);
+    private DisplayPanel displayPanel = new com.udacity.catpoint.security.application.DisplayPanel(securityService);
+    private ControlPanel controlPanel = new com.udacity.catpoint.security.application.ControlPanel(securityService);
     private SensorPanel sensorPanel = new SensorPanel(securityService);
-    private ImagePanel imagePanel = new ImagePanel(securityService);
+    private ImagePanel imagePanel = new com.udacity.catpoint.security.application.ImagePanel(securityService);
 
     public CatpointGui() {
         setLocation(100, 100);

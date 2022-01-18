@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,9 @@ class SecurityServiceTest {
         sensor = new Sensor("Sensor", SensorType.DOOR);
         service.addSensor(sensor);
     }
+
+    @Mock
+    JButton jButton;
 
 /* * 1.If alarm is armed and a sensor becomes activated, put the system into pending alarm status
     Class:SecurityService, Method:handleSensorActivated() Line: 85
@@ -130,7 +134,7 @@ class SecurityServiceTest {
         Mockito.when(fakeSecurityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
         //Question: What to do to detect a cat? call processImage() method
         service.processImage(Mockito.mock(BufferedImage.class)); //act
-        Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.ALARM); //spy the mockSecurityRepository for AlarmStatus
+        Mockito.verify(fakeSecurityRepository,Mockito.times(1)).setAlarmStatus(AlarmStatus.ALARM); //spy the mockSecurityRepository for AlarmStatus
     }
 
 /* * 8. If the image service identifies an image that does not contain a cat, change the status to no alarm as long as the sensors are not active.
@@ -171,7 +175,7 @@ class SecurityServiceTest {
     Mockito.when(fakeSecurityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
     Mockito.when(fakeImageService.imageContainsCat(Mockito.any(),Mockito.anyFloat())).thenReturn(true);
     service.processImage(Mockito.mock(BufferedImage.class));
-    Mockito.verify(fakeSecurityRepository).setAlarmStatus(AlarmStatus.ALARM);
+    Mockito.verify(fakeSecurityRepository,Mockito.times(1)).setAlarmStatus(AlarmStatus.ALARM);
 }
 
     @Test
@@ -234,11 +238,27 @@ class SecurityServiceTest {
     }
 
     @Test
-    public void checkIf_armingStatusIsARMEDHOMEandcatDetected_setAlarmStatusToALARM(){
+    public void checkIf_armingStatusIsARMEDHOMEAndCatDetected_setAlarmStatusToALARM(){
         Mockito.when(fakeSecurityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
         Mockito.when(fakeImageService.imageContainsCat(Mockito.any(), Mockito.anyFloat())).thenReturn(true);
+        service.setCatDetect(true);
         service.processImage(Mockito.eq(Mockito.any(BufferedImage.class)));
         Mockito.verify(fakeSecurityRepository, Mockito.times(1)).setAlarmStatus(AlarmStatus.ALARM);
+    }
+
+    @Test
+    public void checkIf_armingStatusIsARMEDAWAYAndCatDetected_setAlarmStatusToALARM(){
+        service.setCatDetect(true);
+        service.setArmingStatus(ArmingStatus.ARMED_AWAY);
+        Mockito.verify(fakeSecurityRepository, Mockito.times(1)).setAlarmStatus(AlarmStatus.ALARM);
+    }
+
+    @Test
+    void checkIf_(){
+        Mockito.when(fakeSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+        sensor.setActive(true);
+        service.changeSensorActivationStatus(sensor,false);
+        Mockito.verify(fakeSecurityRepository,Mockito.times(1)).setAlarmStatus(AlarmStatus.PENDING_ALARM);
     }
 
 }

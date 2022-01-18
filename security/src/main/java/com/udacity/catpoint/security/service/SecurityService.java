@@ -24,6 +24,7 @@ public class SecurityService {
     private ImageService imageService;
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
+
     private boolean catDetect = false;
 
     public SecurityService(SecurityRepository securityRepository, ImageService imageService) {
@@ -43,7 +44,8 @@ public class SecurityService {
                 break;
             }
             case ARMED_HOME, ARMED_AWAY -> {
-                if(catDetect){
+               // if(catDetect){
+                if(isCatDetect()){
                     setAlarmStatus(AlarmStatus.ALARM);
                 }
                 ConcurrentSkipListSet<Sensor> sensors = new ConcurrentSkipListSet<>(getSensors());
@@ -61,8 +63,8 @@ public class SecurityService {
      * @param cat True if a cat is detected, otherwise false.
      */
     private void catDetected(Boolean cat) {
-        catDetect=cat;
-
+        //catDetect=cat;
+        setCatDetect(cat);
         if((cat && getArmingStatus() == ArmingStatus.ARMED_HOME) || (cat && getArmingStatus() == ArmingStatus.ARMED_AWAY)){
             setAlarmStatus(AlarmStatus.ALARM);
         } else if(!cat && getAllSensorsState(false)){
@@ -116,7 +118,7 @@ public class SecurityService {
             case PENDING_ALARM -> {
                 setAlarmStatus(AlarmStatus.NO_ALARM);
             }
-            case ALARM ->{
+            case NO_ALARM ->{
                 setAlarmStatus(AlarmStatus.PENDING_ALARM);
             }
         }
@@ -133,7 +135,7 @@ public class SecurityService {
         if (alarmStatus != AlarmStatus.ALARM) {
             if (active) {
                 handleSensorActivated();
-            } else if (sensor.getActive()) {
+            } else if (sensor.getActive()) { //by default sensor.getActive() is false
                 handleSensorDeactivated();
             }
         }
@@ -169,4 +171,11 @@ public class SecurityService {
     public ArmingStatus getArmingStatus() {
         return securityRepository.getArmingStatus();
     }
+    public boolean isCatDetect() {
+        return catDetect;
+    }
+    public void setCatDetect(boolean catDetect) {
+        this.catDetect = catDetect;
+    }
+
 }

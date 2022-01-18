@@ -254,7 +254,7 @@ class SecurityServiceTest {
     }
 
     @Test
-    void checkIf_(){
+    void checkIf_whenAlarmStatusIsNOALARMAndSensorMadeInactivePutAlarmToPENDINGALARM(){
         Mockito.when(fakeSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
         sensor.setActive(true);
         service.changeSensorActivationStatus(sensor,false);
